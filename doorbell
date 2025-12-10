@@ -1,0 +1,427 @@
+blueprint:
+  name: Doorbell Automation (Zigbee button)
+  description: >
+    # 🔔 Doorbell Automation
+
+  domain: automation
+  source_url: https://raw.githubusercontent.com/hackon/HomeAssistantBlueprints/refs/heads/main/doorbell.yaml
+  input:
+    trigger_config:
+      name: "General Settings"
+      icon: mdi:cog
+      collapsed: false
+      input:
+        button_device:
+          name: Doorbell Button (MQTT)
+          description: Select the Zigbee2MQTT button to trigger the doorbell.
+          selector:
+            entity:
+              domain: binary_sensor
+        zone_entity:
+          name: Presence Zone
+          description: Zone entity to check for presence (e.g., zone.home).
+          selector:
+            entity:
+              domain: zone
+          default: zone.home
+    media_config:
+      name: "Media Playback Settings"
+      icon: mdi:music
+      collapsed: true
+      input:
+        media_enable:
+          name: Enable Media Playback
+          description: Enable or disable playing media when the doorbell is triggered.
+          default: true
+          selector:
+            boolean: {}
+        media_zone_condition:
+          name: When to play media
+          description: Choose when to play media based on zone presence.
+          default: always
+          selector:
+            select:
+              options:
+                - label: Always
+                  value: always
+                - label: Only if someone is in the zone
+                  value: in
+                - label: Only if no one is in the zone
+                  value: out
+        media_url:
+          name: Media File URL
+          description: URL of the media file to play (e.g., MP3).
+          default: ""
+          selector:
+            text:
+              type: url
+        media_players:
+          name: Media Players
+          description: Select media players to play the doorbell sound.
+          default: []
+          selector:
+            entity:
+              domain: media_player
+              multiple: true
+    light_config:
+      name: "Light Settings"
+      icon: mdi:lightbulb
+      collapsed: true
+      input:
+        light_enable:
+          name: Enable Light Flashing
+          description: Enable or disable flashing lights when the doorbell is pressed.
+          default: false
+          selector:
+            boolean: {}
+        light_zone_condition:
+          name: When to flash lights
+          description: Choose when to flash lights based on zone presence.
+          default: always
+          selector:
+            select:
+              options:
+                - label: Always
+                  value: always
+                - label: Only if someone is in the zone
+                  value: in
+                - label: Only if no one is in the zone
+                  value: out
+        light_entities:
+          name: Light Entities
+          description: Select the light entities to flash.
+          default: []
+          selector:
+            entity:
+              domain: light
+              multiple: true
+        light_flash_times:
+          name: Number of Flashes
+          description: How many times the lights should flash.
+          default: 3
+          selector:
+            number:
+              min: 1
+              max: 10
+              step: 1
+        light_flash_duration:
+          name: Flash Duration
+          description: Time (in seconds) each flash stays on/off.
+          default: 0.5
+          selector:
+            number:
+              min: 0.1
+              max: 3
+              step: 0.1
+    notification_config:
+      name: "Notification Settings"
+      icon: mdi:bell
+      collapsed: true
+      input:
+        notification_enable:
+          name: Enable Notifications
+          description: Optionally notify a mobile device.
+          default: false
+          selector:
+            boolean: {}
+        notification_zone_condition:
+          name: When to send notification
+          description: Choose when to send the notification based on zone presence.
+          default: always
+          selector:
+            select:
+              options:
+                - label: Always
+                  value: always
+                - label: Only if someone is in the zone
+                  value: in
+                - label: Only if no one is in the zone
+                  value: out
+        notification_title:
+          name: Notification Title
+          description: Title of the notification. Defaults to "Doorbell Alert!".
+          default: "Doorbell Alert!"
+          selector:
+            text:
+              type: text
+        notification_message:
+          name: Notification Message
+          description: Message of the notification. Defaults to "Someone is at the door!".
+          default: "Someone is at the door!"
+          selector:
+            text:
+              type: text
+        notification_targets:
+          name: Notification Targets
+          description: Mobile app notify targets (e.g., notify.mobile_app_xyz).
+          default: []
+          selector:
+            device:
+              filter:
+                - integration: mobile_app
+              multiple: true
+        notification_interruption_level:
+          name: Interruption Level - iOS Only
+          description: >
+            On devices running iOS 15 and later, you can configure the interruption level for your notifications to ensure they are delivered according to your preferences.
+            Choose the desired interruption level from the dropdown list.
+            Critical and time-sensitive notifications must be turned ON within the Home Assistant App, and time-sensitive notifications must be allowed in your Focus settings.
+          default: active
+          selector:
+            select:
+              mode: dropdown
+              options:
+                - label: Default
+                  value: "active"
+                - label: Critical Notifications
+                  value: "critical"
+                - label: Time Sensitive Notifications
+                  value: "time-sensitive"
+                - label: Quiet Notifications Without Waking Screen
+                  value: "passive"
+        notification_sound:
+          name: Notification Sound - iOS Only
+          description: >
+            Sounds are from built-in iOS sounds.
+          default: ''
+          selector:
+            select:
+              mode: dropdown
+              options:
+              - label: Default
+                value: ''
+              - label: Doorbell
+                value: Doorbell.caf
+              - label: News Flash
+                value: News_Flash.caf
+              - label: Choo Choo
+                value: Choo_Choo.caf
+              - label: Nano
+                value: NanoAlert5.caf
+        notification_data:
+          name: Android Only Options (Optional)
+          description: >
+            **High Priority** notifications ensure that you receive important alerts immediately.
+            These notifications bypass normal delivery delays and are delivered instantly to your device.
+
+            **Sticky Notification** ensures that important alerts are not dismissed when selected. They remain on your notification screen until you actively clear or swipe them away, ensuring that critical information stays visible until addressed.
+
+            **Notification Channel** allows you to easily organize different notification settings,
+            including notification sounds, vibrations, and other device-specific features.
+            If you choose this option, please enter your desired channel name below.
+          default: []
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: High Priority
+                  value: "high_priority"
+                - label: Sticky Notification
+                  value: "sticky"
+                - label: Notification Channel
+                  value: "channel"
+        notification_channel:
+          name: Notification Channel - Android Only
+          description: >
+            If you have chosen to use a notification channel, simply enter the name of an existing channel to apply its pre-configured settings.
+            If you don't have a channel yet, you can create a new one by entering a name here.
+            When your automation sends the first notification, it will create the channel on your device.
+            After the channel is created, you can customize its notification settings to your preference directly on your device.
+          default: []
+          selector:
+            text:
+    custom_actions:
+      name: "Custom Actions"
+      icon: mdi:script-text
+      collapsed: true
+      input:
+        enable_custom_actions:
+          name: Enable Custom Actions
+          description: Enable or disable custom actions when the doorbell is triggered.
+          default: false
+          selector:
+            boolean: {}
+
+        custom_actions_presence_condition:
+          name: Custom Actions Presence Condition
+          description: Choose when to execute custom actions based on zone presence.
+          default: always
+          selector:
+            select:
+              options:
+                - label: Always
+                  value: always
+                - label: Only if someone is in the zone
+                  value: in
+                - label: Only if no one is in the zone
+                  value: out
+        custom_actions:
+          name: Custom Actions
+          description: >
+            Optional custom actions to execute when the doorbell is pressed.
+            This can be a script, scene, or any other service call.
+          default: []
+          selector:
+            action: {}
+
+variables:
+  # ------------------------------
+  # Zone and Presence Variables
+  # ------------------------------
+  zone: !input zone_entity
+  zone_name: "{{ state_attr(zone, 'friendly_name') | lower }}"
+
+  someone_in_zone: >
+    {{ expand(states.person) | selectattr('state', 'equalto', zone_name) | list | count > 0 }}
+
+  # ------------------------------
+  # Media Variables
+  # ------------------------------
+  media_zone_condition: !input media_zone_condition
+  media_url: !input media_url
+  media_players: !input media_players
+  media_enable: !input media_enable
+
+  # ------------------------------
+  # Light Variables
+  # ------------------------------
+  light_enable: !input light_enable
+  light_entities: !input light_entities
+  light_flash_times: !input light_flash_times
+  light_flash_duration: !input light_flash_duration
+  light_zone_condition: !input light_zone_condition
+
+  # ------------------------------
+  # Notification Variables
+  # ------------------------------
+  notification_zone_condition: !input notification_zone_condition
+  notification_enable: !input notification_enable
+  notification_targets: !input notification_targets
+  notification_interruption_level: !input notification_interruption_level
+  notification_sound: !input notification_sound
+  notification_data: !input notification_data
+  notification_channel: !input notification_channel
+  notification_title: !input notification_title
+  notification_message: !input notification_message
+  notification_msg_data: >-
+    {% set message = namespace(data={}) %}
+    {% set push = namespace(data={}) %}
+    {% if notification_interruption_level in ['active', 'critical', 'time-sensitive', 'passive'] %}
+      {% set push.data = dict(push.data, **{ 'interruption-level': notification_interruption_level }) %}
+    {% endif %}
+    {% if notification_sound != '' %}
+      {% set push.data = dict(push.data, **{
+        'sound': { 'name': notification_sound }
+      }) %}
+    {% endif %}
+    {% if push.data %}
+      {% set message.data = dict(message.data, **{ 'push': push.data }) %}
+    {% endif %}
+    {% if 'high_priority' in notification_data %}
+      {% set message.data = dict(message.data, **{ 'ttl': 0, 'priority': 'high' }) %}
+    {% endif %}
+    {% if 'channel' in notification_data %}
+      {% set message.data = dict(message.data, **{ 'channel': notification_channel }) %}
+    {% endif %}
+    {% if 'sticky' in notification_data %}
+      {% set message.data = dict(message.data, **{ 'sticky': "true" }) %}
+    {% endif %}
+    {{ message.data }}
+
+  # ------------------------------
+  # Custom Actions Variables
+  # ------------------------------
+  enable_custom_actions: !input enable_custom_actions
+  custom_actions_presence_condition: !input custom_actions_presence_condition
+  custom_actions: !input custom_actions
+
+triggers:
+  - platform: device
+    device_id: !input button_device
+    domain: mqtt
+    type: action
+    subtype: single
+
+condition: []
+
+action:
+  - parallel:
+    - choose:
+        - alias: "Check if media should play"
+          conditions:
+            - condition: template
+              value_template: "{{ media_enable }}" # Check if media playback is enabled
+            - condition: template
+              value_template: "{{ media_zone_condition == 'always' or (media_zone_condition == 'in' and someone_in_zone) or (media_zone_condition == 'out' and not someone_in_zone) }}"
+            - condition: template
+              value_template: "{{ media_players | length > 0 }}" # Ensure at least one media player is selected
+          sequence:
+            - service: media_player.play_media
+              data:
+                media_content_id: "{{ media_url }}"
+                media_content_type: music
+              target:
+                entity_id: !input media_players
+    - choose:
+        - alias: "Check if lights should flash"
+          conditions:
+            - condition: template
+              value_template: "{{ light_enable }}" # Check if light flashing is enabled
+            - condition: template
+              value_template: "{{ light_zone_condition == 'always' or (light_zone_condition == 'in' and someone_in_zone) or (light_zone_condition == 'out' and not someone_in_zone) }}"
+            - condition: template
+              value_template: "{{ light_entities | length > 0 }}" # Ensure at least one light entity is selected
+          sequence:
+            - alias: Save Current Light State
+              service: scene.create
+              data:
+                scene_id: doorbell_flash_restore
+                snapshot_entities: !input light_entities
+            - alias: Flash Lights
+              repeat:
+                count: "{{ light_flash_times | int }}"  # Ensure the count is an integer
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: !input light_entities
+                  - delay:
+                      seconds: "{{ light_flash_duration | float }}"  # Ensure the duration is a float
+                  - service: light.turn_off
+                    target:
+                      entity_id: !input light_entities
+                  - delay:
+                      seconds: "{{ light_flash_duration | float }}"  # Ensure the duration is a float
+            - alias: Restore Light State
+              service: scene.turn_on
+              target:
+                entity_id: scene.doorbell_flash_restore
+    - choose:
+        - alias: "Check if notification should be sent"
+          conditions:
+            - condition: template
+              value_template: "{{ notification_enable }}" # Check if notification is enabled
+            - condition: template
+              value_template: "{{ notification_zone_condition == 'always' or (notification_zone_condition == 'in' and someone_in_zone) or (notification_zone_condition == 'out' and not someone_in_zone) }}"
+            - condition: template
+              value_template: "{{ notification_targets | length > 0 }}" # Ensure at least one media player is selected
+          sequence:
+            - alias: Send a notification to each device
+              repeat:
+                for_each: !input notification_targets
+                sequence:
+                  - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                    data:
+                      title: "{{ notification_title }}"
+                      message: "{{ notification_message }}"
+                      data: "{{ notification_msg_data }}"
+    - choose:
+        - alias: "Check if custom actions should run"
+          conditions:
+            - condition: template
+              value_template: "{{ enable_custom_actions }}" # Check if custom actions are enabled
+            - condition: template
+              value_template: >
+                {{ custom_actions_presence_condition == 'always' or
+                  (custom_actions_presence_condition == 'in' and someone_in_zone) or
+                  (custom_actions_presence_condition == 'out' and not someone_in_zone) }}
+          sequence: !input custom_actions # Execute the custom actions
